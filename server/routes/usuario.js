@@ -8,11 +8,14 @@ const _ = require('underscore');
 // Modelo
 const Usuario = require('../models/usuario');
 
+//Middleware
+const { verificaToken, tokenAdmin } = require('../middlewares/autenticacion');
+
 /* -------------------------------------------------------------------------- */
 /*                                    RUTAS                                   */
 /* -------------------------------------------------------------------------- */
 
-app.get('/usuario', (req, res) => {
+app.get('/usuario', verificaToken, (req, res) => {
 	let desde = Number(req.query.desde) || 0;
 	let limite = Number(req.query.limite) || 5;
 	Usuario.find({}, 'nombre email role estado google img')
@@ -35,7 +38,8 @@ app.get('/usuario', (req, res) => {
 		});
 });
 
-app.post('/usuario', (req, res) => {
+/* ------------------------------ CREAR USUARIO ----------------------------- */
+app.post('/usuario', [verificaToken, tokenAdmin], (req, res) => {
 	let body = req.body;
 	let usuario = new Usuario({
 		nombre: body.nombre,
@@ -65,7 +69,9 @@ app.post('/usuario', (req, res) => {
 		});
 });
 
-app.put('/usuario/:id', (req, res) => {
+/* --------------------------- ACTUALIZAR USUARIO --------------------------- */
+
+app.put('/usuario/:id', [verificaToken, tokenAdmin], (req, res) => {
 	const id = req.params.id;
 	// Función que retorna un nuevo objeto con las propiedades especificadas
 	let body = _.pick(req.body, ['nombre', 'img', 'role', 'estado']);
@@ -84,7 +90,8 @@ app.put('/usuario/:id', (req, res) => {
 		});
 });
 
-app.delete('/usuario/:id', (req, res) => {
+/* ---------------------------- ELIMINAR USUARIO ---------------------------- */
+app.delete('/usuario/:id', [verificaToken, tokenAdmin], (req, res) => {
 	let id = req.params.id;
 	let cambioEstado = {
 		estado: false,
